@@ -1,0 +1,13 @@
+{
+  "name" : "Fukkatsu no Jumon",
+  "description" : "Save data with Parity Check Codes",
+  "keywords" : ["Parity Check Codes"],
+  "repositories" : [
+    {
+      "type": "vcs",
+      "url": "https://github.com/ysawa/fukkatsuno-jumon.git"
+    }
+  ],
+  "require" : {
+  }
+}
