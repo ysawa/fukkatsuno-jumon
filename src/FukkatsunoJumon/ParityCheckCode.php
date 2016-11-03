@@ -46,14 +46,11 @@ CODE;
 
 	private $_checkCodeArray;
 	private $_generatorCodeArray;
-	private $_humanCodeMap;
-	private $_salt;
 
-	public function __construct($salt) {
+	public function __construct() {
 		$toInt = function ($string) {
 			return bindec($string);
 		};
-		$this->_salt = $salt;
 		$this->_checkCodeArray = array_map($toInt, preg_split("/\r\n|\r|\n/", self::CHECK_CODE_STRING));
 		$this->_generatorCodeArray = array_map($toInt, preg_split("/\r\n|\r|\n/", self::GENERATOR_CODE_STRING));
 	}
@@ -69,40 +66,42 @@ CODE;
 		return (array_sum($numbers) % 2);
 	}
 
+	/**
+	 * @param $humanCode
+	 * @return bool|int
+	 */
 	public function convertHumanCodeToEncoded($humanCode) {
 		if (empty($humanCode)) {
 			return false;
 		}
 
-		$splittedHumanCode = array_intersect(
-			str_split($humanCode),
-			$this->_humanCodeMap
-		);
-		if (count($splittedHumanCode) !== (self::GENERATED_CODE_LENGTH / 8)) {
+		$splittedHumanCode = [];
+		$length = mb_strlen($humanCode);
+		for ($i = 0; $i < $length; $i++) {
+			$subString = mb_substr($humanCode, $i, 1);
+			if (in_array($subString, self::$HUMAN_CODE_MAP)) {
+				$splittedHumanCode[] = $subString;
+			}
+		}
+
+		if (count($splittedHumanCode) !== self::GENERATED_CODE_LENGTH / self::HUMAN_CODE_LENGTH) {
 			return false;
 		}
 
+		/**
+		 * @param string $character
+		 * @return integer
+		 */
 		$toInt = function ($character) {
-			return array_search($character, $this->_humanCodeMap);
+			return array_search($character, self::$HUMAN_CODE_MAP);
 		};
 
 		$generated = 0;
 		foreach (array_map($toInt, $splittedHumanCode) as $code) {
-			$generated = ($generated << 5) | $code;
+			$generated = ($generated << self::HUMAN_CODE_LENGTH) | $code;
 		}
 
 		return $generated;
-	}
-
-	public function convertGeneratedToHumanCode($generated) {
-
-		$toHumanCode = function ($string) {
-			return $this->_humanCodeMap[bindec($string)];
-		};
-		$format = "%0" . self::GENERATED_CODE_LENGTH . 's';
-		$generatedCode = sprintf($format, decbin($generated));
-		$splitted = str_split($generatedCode, self::HUMAN_CODE_LENGTH);
-		return implode('', array_map($toHumanCode, $splitted));
 	}
 
 	/**
@@ -112,15 +111,9 @@ CODE;
 	public function convertToHumanCode($generated)
 	{
 		$string = decbin($generated);
-		$length = strlen($string);
 
-		if (($length % self::GENERATED_CODE_LENGTH) === 0) {
-			$generatedCode = $string;
-		} else {
-			$nextLength = (floor($length / self::GENERATED_CODE_LENGTH) + 1) * self::GENERATED_CODE_LENGTH;
-			$format = "%0" . $nextLength . 's';
-			$generatedCode = sprintf($format, $string);
-		}
+		$format = "%0" . self::GENERATED_CODE_LENGTH . 's';
+		$generatedCode = sprintf($format, $string);
 
 		$splitted = str_split($generatedCode, self::HUMAN_CODE_LENGTH);
 		return implode('', array_map(function ($string) {
@@ -134,6 +127,10 @@ CODE;
 		return bindec($messageString);
 	}
 
+	/**
+	 * @param string $humanCode
+	 * @return bool|number
+	 */
 	public function decodeHumanCode($humanCode) {
 		if (!$this->isValidHumanCode($humanCode)) {
 			return false;
@@ -143,14 +140,9 @@ CODE;
 	}
 
 	/**
-	 * @param string $message
-	 * @return string
+	 * @param number $message
+	 * @return number
 	 */
-	public function encode($message) {
-		$code = '';
-		return $code;
-	}
-
 	public function generate($message) {
 		$codeString = '';
 		for ($i = 0; $i < self::GENERATED_CODE_LENGTH; $i++) {
@@ -159,6 +151,10 @@ CODE;
 		return bindec($codeString);
 	}
 
+	/**
+	 * @param number $generated
+	 * @return bool
+	 */
 	public function isValidGenerated($generated) {
 
 		for ($i = 0; $i < self::CHECK_CODE_LENGTH; $i++) {
@@ -171,9 +167,13 @@ CODE;
 		return true;
 	}
 
+	/**
+	 * @param string $humanCode
+	 * @return bool
+	 */
 	public function isValidHumanCode($humanCode) {
 		$generated = $this->convertHumanCodeToEncoded($humanCode);
-		if ($generated) {
+		if ($generated !== false) {
 			return $this->isValidGenerated($generated);
 		} else {
 			return false;

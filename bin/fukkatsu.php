@@ -8,11 +8,13 @@
 
 require __DIR__ . '/../vendor/autoload.php';
 use FukkatsunoJumon\ParityCheckCode;
+use FukkatsunoJumon\BlockCode;
 
-$code = new ParityCheckCode(0);
+$block = new BlockCode(0);
+$code = new ParityCheckCode();
 
 for ($i = 0; $i < 8; $i++) {
 	$generated = $code->generate($i);
 	$encoded = $code->convertToHumanCode($generated);
-	var_dump($i, $generated, $encoded);
+	$decoded = $code->decodeHumanCode($encoded);
 }
