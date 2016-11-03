@@ -10,11 +10,12 @@ require __DIR__ . '/../vendor/autoload.php';
 use FukkatsunoJumon\ParityCheckCode;
 use FukkatsunoJumon\BlockCode;
 
-$block = new BlockCode(0);
-$code = new ParityCheckCode();
+$salt = $argv[1];
+$plaintext = $argv[2];
+$block = new BlockCode($salt);
 
-for ($i = 0; $i < 8; $i++) {
-	$generated = $code->generate($i);
-	$encoded = $code->convertToHumanCode($generated);
-	$decoded = $code->decodeHumanCode($encoded);
-}
+var_dump('PLAINTEXT: ' . $plaintext);
+$encoded = $block->encode($plaintext);
+var_dump('ENCODED: ' . $encoded);
+$decoded = $block->decode($encoded);
+var_dump('DECODED: ' . $decoded);

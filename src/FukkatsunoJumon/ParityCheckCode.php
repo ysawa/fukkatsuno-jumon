@@ -60,7 +60,7 @@ CODE;
 	 * @param int $vector1
 	 * @return int (0 or 1)
 	 */
-	protected static function innerProduct($vector0, $vector1) {
+	protected static function dotP($vector0, $vector1) {
 		$vector = $vector0 & $vector1;
 		$numbers = str_split(decbin($vector));
 		return (array_sum($numbers) % 2);
@@ -146,7 +146,7 @@ CODE;
 	public function generate($message) {
 		$codeString = '';
 		for ($i = 0; $i < self::GENERATED_CODE_LENGTH; $i++) {
-			$codeString .= self::innerProduct($message, $this->_generatorCodeArray[$i]);
+			$codeString .= self::dotP($message, $this->_generatorCodeArray[$i]);
 		}
 		return bindec($codeString);
 	}
@@ -158,7 +158,7 @@ CODE;
 	public function isValidGenerated($generated) {
 
 		for ($i = 0; $i < self::CHECK_CODE_LENGTH; $i++) {
-			$syndrome = self::innerProduct($generated, $this->_checkCodeArray[$i]);
+			$syndrome = self::dotP($generated, $this->_checkCodeArray[$i]);
 			if ($syndrome !== 0) {
 				return false;
 			}
