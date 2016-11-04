@@ -14,8 +14,5 @@ $salt = $argv[1];
 $plaintext = $argv[2];
 $block = new BlockCode($salt);
 
-var_dump('PLAINTEXT: ' . $plaintext);
 $encoded = $block->encode($plaintext);
-var_dump('ENCODED: ' . $encoded);
-$decoded = $block->decode($encoded);
-var_dump('DECODED: ' . $decoded);
+echo $encoded;
